@@ -77,7 +77,7 @@ void processJets() {
     int numEvents = hltTree->GetEntries();
     cout << "total events: " << numEvents << endl;
     for (int i = 0; i < numEvents; i++) {
-      if ( numEvents %1000 )
+      if ( numEvents %100000 == 0 )
 	cout << "working on " << i << "/"<<numEvents<< "th event..." << endl;
       
       hltTree->GetEntry(i);
