@@ -12,17 +12,22 @@ void processJets() {
   TChain *hltTree = new TChain("hltanalysis/HltTree");
   TChain *caloJetTree = new TChain("ak4CaloJetAnalyzer/caloJetTree");
   
-  hltTree->Add("HiForestMiniAOD_all.root");
-  caloJetTree->Add("HiForestMiniAOD_all.root");
+  // When you use a local file:
+  //hltTree->Add("HiForestMiniAOD_all.root");  
+  //  caloJetTree->Add("HiForestMiniAOD_all.root");
 
+  // When you use eos files:
+  hltTree->Add("/eos/cms/store/group/phys_heavyions/jdlang/run3_2023Data_Jan2024ReReco/Run3_2023UPC_375415/HIForward13/crab_Run3_2023UPC_Jan2024ReReco_375415_HIForward13/250213_174525/0000/*.root");
+  caloJetTree->Add("/eos/cms/store/group/phys_heavyions/jdlang/run3_2023Data_Jan2024ReReco/Run3_2023UPC_375415/HIForward13/crab_Run3_2023UPC_Jan2024ReReco_375415_HIForward13/250213_174525/0000/*.root");
+  
   
   /*  TFile *file = TFile::Open("HiForestMiniAOD_all.root");
-    if (!file || file->IsZombie()) {
-        std::cerr << "Error opening file!" << std::endl;
-        return;
-	}*/
-
-    // 🔹 2. Retrieve Trees
+      if (!file || file->IsZombie()) {
+      std::cerr << "Error opening file!" << std::endl;
+      return;
+      }*/
+  
+  // 🔹 2. Retrieve Trees
   //TTree *hltTree = (TTree*)file->Get("hltanalysis/HltTree");
   //  TTree *caloJetTree = (TTree*)file->Get("ak4CaloJetAnalyzer/caloJetTree");
   
@@ -31,17 +36,17 @@ void processJets() {
   //    return;
   //  }
   
-    // 🔹 3. Set Branches
-    int trigger1, trigger2;
-    hltTree->SetBranchAddress("HLT_HIUPC_SingleJet8_ZDC1nXOR_MaxPixelCluster50000_v2", &trigger1);
-    hltTree->SetBranchAddress("HLT_HIUPC_SingleJet8_NotMBHF2AND_MaxPixelCluster50000_v2", &trigger2);
-
-    const int maxJets = 100;
-    int nref;
-    Float_t jtpt[maxJets];
-    Float_t jteta[maxJets];
-    Float_t jtphi[maxJets];
-
+  // 🔹 3. Set Branches
+  int trigger1, trigger2;
+  hltTree->SetBranchAddress("HLT_HIUPC_SingleJet8_ZDC1nXOR_MaxPixelCluster50000_v2", &trigger1);
+  hltTree->SetBranchAddress("HLT_HIUPC_SingleJet8_NotMBHF2AND_MaxPixelCluster50000_v2", &trigger2);
+  
+  const int maxJets = 100;
+  int nref;
+  Float_t jtpt[maxJets];
+  Float_t jteta[maxJets];
+  Float_t jtphi[maxJets];
+  
     caloJetTree->SetBranchAddress("nref", &nref);
     caloJetTree->SetBranchAddress("jtpt", jtpt);
     caloJetTree->SetBranchAddress("jteta", jteta);
@@ -69,13 +74,17 @@ void processJets() {
 
     // 🔹 5. Event Loop
     int numEvents = hltTree->GetEntries();
+    cout << "total events: " << numEvents << endl;
     for (int i = 0; i < numEvents; i++) {
-        hltTree->GetEntry(i);
-        caloJetTree->GetEntry(i);
-        
-        // Reset variables for each event
-        selected_nref = 0;
-        j1pt = j2pt = j3pt = -999;
+      if ( numEvents %1000 )
+	cout << "working on " << i << "/"<<numEvents<< "th event..." << endl;
+      
+      hltTree->GetEntry(i);
+      caloJetTree->GetEntry(i);
+      
+      // Reset variables for each event
+      selected_nref = 0;
+      j1pt = j2pt = j3pt = -999;
         j1eta = j2eta = j3eta = -999;
         j1phi = j2phi = j3phi = -999;
 
