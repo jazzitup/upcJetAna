@@ -17,8 +17,9 @@ void processJets() {
   //  caloJetTree->Add("HiForestMiniAOD_all.root");
 
   // When you use eos files:
-  hltTree->Add("/eos/cms/store/group/phys_heavyions/jdlang/run3_2023Data_Jan2024ReReco/Run3_2023UPC_375415/HIForward13/crab_Run3_2023UPC_Jan2024ReReco_375415_HIForward13/250213_174525/0000/*.root");
-  caloJetTree->Add("/eos/cms/store/group/phys_heavyions/jdlang/run3_2023Data_Jan2024ReReco/Run3_2023UPC_375415/HIForward13/crab_Run3_2023UPC_Jan2024ReReco_375415_HIForward13/250213_174525/0000/*.root");
+  hltTree->Add("/eos/cms/store/group/phys_heavyions/jdlang/run3_2023Data_Jan2024ReReco/Run3_2023UPC_375697/HIForward13/*/*/*/*.root");
+  caloJetTree->Add("/eos/cms/store/group/phys_heavyions/jdlang/run3_2023Data_Jan2024ReReco/Run3_2023UPC_375697/HIForward13/*/*/*/*.root");
+  //->Add("/eos/cms/store/group/phys_heavyions/jdlang/run3_2023Data_Jan2024ReReco/Run3_2023UPC_375415/HIForward13/crab_Run3_2023UPC_Jan2024ReReco_375415_HIForward13/250213_174525/0000/*.root");
   
   
   /*  TFile *file = TFile::Open("HiForestMiniAOD_all.root");
