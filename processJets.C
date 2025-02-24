@@ -8,22 +8,29 @@
 #include <algorithm>
 
 void processJets() {
-    // 🔹 1. Open input ROOT file
-    TFile *file = TFile::Open("HiForestMiniAOD_all.root");
+  // USE TChain!! 
+  TChain *hltTree = new TChain("hltanalysis/HltTree");
+  TChain *caloJetTree = new TChain("ak4CaloJetAnalyzer/caloJetTree");
+  
+  hltTree->Add("HiForestMiniAOD_all.root");
+  caloJetTree->Add("HiForestMiniAOD_all.root");
+
+  
+  /*  TFile *file = TFile::Open("HiForestMiniAOD_all.root");
     if (!file || file->IsZombie()) {
         std::cerr << "Error opening file!" << std::endl;
         return;
-    }
+	}*/
 
     // 🔹 2. Retrieve Trees
-    TTree *hltTree = (TTree*)file->Get("hltanalysis/HltTree");
-    TTree *caloJetTree = (TTree*)file->Get("ak4CaloJetAnalyzer/caloJetTree");
-
-    if (!hltTree || !caloJetTree) {
-        std::cerr << "Error: Trees not found in file!" << std::endl;
-        return;
-    }
-
+  //TTree *hltTree = (TTree*)file->Get("hltanalysis/HltTree");
+  //  TTree *caloJetTree = (TTree*)file->Get("ak4CaloJetAnalyzer/caloJetTree");
+  
+  //  if (!hltTree || !caloJetTree) {
+  //    std::cerr << "Error: Trees not found in file!" << std::endl;
+  //    return;
+  //  }
+  
     // 🔹 3. Set Branches
     int trigger1, trigger2;
     hltTree->SetBranchAddress("HLT_HIUPC_SingleJet8_ZDC1nXOR_MaxPixelCluster50000_v2", &trigger1);
@@ -121,7 +128,4 @@ void processJets() {
     
     std::cout << "Output saved to output_tree.root" << std::endl;
     
-    // 🔹 7. Clean up
-    file->Close();
-    delete file;
 }

@@ -46,7 +46,34 @@ void makeJetSkim() {
     //   Float_t         jtpu[35];   //[nref]
     //   Float_t         jtm[35];   //[nref]
     //   Float_t         jtarea[35];   //[nref]
-   
+
+     // 🔹 4. Create Output File and New TTree
+    TFile *outFile = new TFile("output_tree.root", "RECREATE");
+    TTree *outTree = new TTree("selectedJets", "Filtered jet data");
+
+    Float_t jet1pt=-1; // leading jet pT
+    Float_t jet1eta=-1; // leading jet Eta
+    Float_t jet1phi=-1; // leading jet Eta
+
+    Float_t jet2pt=-11; // subleading jet pT
+    Float_t jet2eta=-11; // subleading jet Eta
+    Float_t jet2phi=-11; // subleading jet Eta
+
+    Float_t jet3pt=-111; // third leading jet pT
+    Float_t jet3eta=-111; // third leading jet Eta
+    Float_t jet3phi=-111; // third leading jet Eta
+
+    outTree->Branch("jet1pt", &jet1pt, "jet1pt/F");
+    outTree->Branch("jet1eta", &jet1eta, "jet1eta/F");
+    outTree->Branch("jet1phi", &jet1phi, "jet1phi/F");
+    outTree->Branch("jet2pt", &jet2pt, "jet2pt/F");
+    outTree->Branch("jet2eta", &jet2eta, "jet2eta/F");
+    outTree->Branch("jet2phi", &jet2phi, "jet2phi/F");
+    outTree->Branch("jet3pt", &jet3pt, "jet3pt/F");
+    outTree->Branch("jet3eta", &jet3eta, "jet3eta/F");
+    outTree->Branch("jet3phi", &jet3phi, "jet3phi/F");
+
+    
     // 🔹 5. 히스토그램 정의 (매번 실행 시마다 새로 생성)
     TH1F *h_jtpt = new TH1F("h_jtpt", "Jet Transverse Momentum (jtpt > 1)", 100, 0, 40);
     TH1F *h_jteta = new TH1F("h_jteta", "Eta Distribution (jtpt > 1)", 50, -5, 5);
@@ -64,6 +91,9 @@ void makeJetSkim() {
         if (trigger1 || trigger2) {
             // 🔸 Jet 정보 저장 (jtpt > 1인 경우만)
             for (int j = 0; j < nref; j++) {
+
+	      if ( fabs(jteta[j]) > 2.4 ) continue;   // We account only jets within |eta|<2.4
+	      
 	      if (jtpt[j] > 1) {  // pT가 1보다 큰 jet만 처리
 		h_jtpt->Fill(jtpt[j]);
 		h_jteta->Fill(jteta[j]);
