@@ -7,7 +7,7 @@
 #include <vector>
 #include <algorithm>
 
-void processJets() {
+void processJets(TString inputDir="/eos/cms/store/group/phys_heavyions/jdlang/run3_2023Data_Jan2024ReReco/Run3_2023UPC_375697/HIForward13/*/*/*/*.root", TString outputFile="output375697_HiForward13.root") {
   // USE TChain!! 
   TChain *hltTree = new TChain("hltanalysis/HltTree");
   TChain *caloJetTree = new TChain("ak4CaloJetAnalyzer/caloJetTree");
@@ -17,9 +17,8 @@ void processJets() {
   //  caloJetTree->Add("HiForestMiniAOD_all.root");
 
   // When you use eos files:
-  hltTree->Add("/eos/cms/store/group/phys_heavyions/jdlang/run3_2023Data_Jan2024ReReco/Run3_2023UPC_375697/*/*/*/*/*.root");
-  caloJetTree->Add("/eos/cms/store/group/phys_heavyions/jdlang/run3_2023Data_Jan2024ReReco/Run3_2023UPC_375697/*/*/*/*/*.root");
-  //->Add("/eos/cms/store/group/phys_heavyions/jdlang/run3_2023Data_Jan2024ReReco/Run3_2023UPC_375415/HIForward13/crab_Run3_2023UPC_Jan2024ReReco_375415_HIForward13/250213_174525/0000/*.root");
+  hltTree->Add(inputDir); 
+  caloJetTree->Add(inputDir);
   
   
   /*  TFile *file = TFile::Open("HiForestMiniAOD_all.root");
@@ -54,7 +53,7 @@ void processJets() {
     caloJetTree->SetBranchAddress("jtphi", jtphi);
 
     // 🔹 4. Create Output File and New TTree
-    TFile *outFile = new TFile("output_tree_375697_all.root", "RECREATE");
+    TFile *outFile = new TFile(outputFile,"RECREATE");
     TTree *outTree = new TTree("jets", "Filtered jet data");
 
     int selected_nref;
