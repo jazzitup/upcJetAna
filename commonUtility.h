@@ -20,6 +20,18 @@
 
 char* dummy="";
 
+#include <cmath>
+
+const double PI = M_PI;  // Use the predefined π from <cmath>
+
+// Function to calculate the smallest angular difference
+double getDphi(double phi1, double phi2) {
+    double diff = fmod(fabs(phi1 - phi2), 2 * PI);  // Absolute difference modulo 2π
+
+    // If the difference is greater than π, take the complementary angle
+    return (diff > PI) ? (2 * PI - diff) : diff;
+}
+
 void easyRange(TH1 *h=0, double ratio=1.6, double minimum=0.001)
 {
   double maxBinContent = h->GetMaximum();
