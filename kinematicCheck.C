@@ -25,7 +25,7 @@
 #include <TLorentzVector.h>
 
 //void test(TString infile="podio_files/Pentaquark_hepmc_output_20241202_p275.0GeV_e18.0GeV_two_body_kinematics_eta1.9-8_100000evts_ip6_hidiv_275x18.root") {
-void kinematicCheck(TString fname="/eos/cms/store/group/phys_heavyions/jdlang/run3_2023Data_Jan2024ReReco/Run3_2023UPC_375697/HIForward13/*/*/*/*.root") {
+void kinematicCheck(TString fname="output375697_HiForward13.root") {
 
     TFile* infile =new TFile(fname);
     TTree* jetTree = (TTree*)infile->Get("jets");
