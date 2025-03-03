@@ -25,9 +25,13 @@
 #include <TLorentzVector.h>
 
 //void test(TString infile="podio_files/Pentaquark_hepmc_output_20241202_p275.0GeV_e18.0GeV_two_body_kinematics_eta1.9-8_100000evts_ip6_hidiv_275x18.root") {
-void kinematicCheck(TString fname="output375697_HiForward13.root") {
+void kinematicCheck(TString fname="output_tree_13k.root") {
 
-    TFile* infile =new TFile(fname);
+  float ptcut1 = 20;
+  float ptcut2 = ptcut1;
+
+
+  TFile* infile =new TFile(fname);
     TTree* jetTree = (TTree*)infile->Get("jets");
    Int_t           nref;
    Float_t         j1pt;
@@ -73,11 +77,19 @@ void kinematicCheck(TString fname="output375697_HiForward13.root") {
     TH1D *hDeta12 = new TH1D("hDeta12","; #Delta #eta;",20,-5,5);
     TH1D *hDeta12_dphiCut = (TH1D*)hDeta12->Clone("hDeta12_dPhiCut");
 
+    TH1D *hDeta13_dphiCut = (TH1D*)hDeta12->Clone("hDeta12_dPhiCut");
+
     int nEntries = jetTree->GetEntries();
     
     for ( int i=0 ; i< nEntries ; i++) { 
         jetTree->GetEntry(i);
-        hPt1->Fill( j1pt);
+
+	if (j1pt < ptcut1)
+	  continue;
+	if (j2pt < ptcut2)
+	  continue;
+	
+	hPt1->Fill( j1pt);
         hPt2->Fill( j2pt);
         hPt3->Fill( j3pt);
 	
@@ -85,10 +97,15 @@ void kinematicCheck(TString fname="output375697_HiForward13.root") {
 	hDphi12->Fill(dphi12);
 
 	hDeta12->Fill( j2eta - j1eta);
-	if (dphi12 > 2/3. *3.141592)
+	if (dphi12 > 2/3. *3.141592)  {
 	  hDeta12_dphiCut->Fill(j2eta - j1eta);
+	  
+	  if ( ( j3pt>0 )) // && ( fabs((j1eta+j2eta)/2. - 1) < 0.5 ) )
+	    hDeta13_dphiCut->Fill(j3eta - (j1eta+j2eta)/2.);
+	}
     }
     
+
     handsomeTH1(hPt1,1); 
     handsomeTH1(hPt2,2); 
     handsomeTH1(hPt3,4); 
@@ -100,15 +117,16 @@ void kinematicCheck(TString fname="output375697_HiForward13.root") {
     hPt2->Draw("same");
     hPt3->Draw("same");
 
-    TCanvas *canvas2 = new TCanvas("canvas2", "",1000,500);
-    canvas2->Divide(2,1);
+    TCanvas *canvas2 = new TCanvas("canvas2", "",1200,400);
+    canvas2->Divide(3,1);
     canvas2->cd(1);
     hDphi12->Draw();
     canvas2->cd(2);
     
     hDeta12->Draw("");
     hDeta12_dphiCut->Draw("same");
+    canvas2->cd(3);
+    hDeta13_dphiCut->Draw();
 
-    
     
 }
