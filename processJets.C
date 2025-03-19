@@ -9,7 +9,7 @@
 #include <TChain.h>
 
 //void processJets(TString inputDir="/eos/cms/store/group/phys_heavyions/jdlang/run3_2023Data_Jan2024ReReco/Run3_2023UPC_375697/HIForward13/*/*/*/*.root", TString outputFile="output375697_HiForward13.root") {
-void processJets(TString inputDir="HiForestMiniAOD_all.root", TString outputFile="test_output.root") {
+void processJets(TString inputDir="forest_000.root", TString outputFile="output_tree_L1SignleJet8trig.root") {
   // USE TChain!! 
   TChain *hltTree = new TChain("hltanalysis/HltTree");
   TChain *jetTree = new TChain("ak4PFJetAnalyzer/t");
@@ -106,8 +106,8 @@ void processJets(TString inputDir="HiForestMiniAOD_all.root", TString outputFile
     // 🔹 5. Event Loop
     int numEvents = hltTree->GetEntries();
     cout << "total events: " << numEvents << endl;
-    for (int i = 0; i < 10000; i++) {
-      //    for (int i = 0; i < numEvents; i++) {
+    //    for (int i = 0; i < 10000; i++) {
+    for (int i = 0; i < numEvents; i++) {
       if ( i%100000 == 0 )
 	cout << "working on " << i << "/"<<numEvents<< "th event..." << endl;
       
@@ -206,6 +206,6 @@ void processJets(TString inputDir="HiForestMiniAOD_all.root", TString outputFile
     outTrkTree->Write();
     outFile->Close();
     
-    std::cout << "Output saved to output_tree_L1SignleJet8trig.root" << std::endl;
+        std::cout << "Output saved to output_tree_L1SignleJet8trig.root" << std::endl;
     
 }
