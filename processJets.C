@@ -12,20 +12,21 @@
 void processJets(TString inputDir="HiForestMiniAOD_all.root", TString outputFile="test_output.root") {
   // USE TChain!! 
   TChain *hltTree = new TChain("hltanalysis/HltTree");
-  TChain *caloJetTree = new TChain("ak4CaloJetAnalyzer/caloJetTree");
+  TChain *jetTree = new TChain("ak4PFJetAnalyzer/t");
   TChain *trackTree = new TChain("ppTracks/trackTree");
   
 
   // When you use eos files:
   hltTree->Add(inputDir); 
-  caloJetTree->Add(inputDir);
+  jetTree->Add(inputDir);
   trackTree->Add(inputDir);
   
   // 🔹 3. Set Branches
-  int trigger1, trigger2;
+  int trigger1, trigger2, trigSingleJet8;
   int notMBTrig;
   hltTree->SetBranchAddress("HLT_HIUPC_SingleJet8_ZDC1nXOR_MaxPixelCluster50000_v2", &trigger1);
   hltTree->SetBranchAddress("HLT_HIUPC_SingleJet8_NotMBHF2AND_MaxPixelCluster50000_v2", &trigger2);
+  hltTree->SetBranchAddress("L1_SingleJet8_NotMinimumBiasHF2_AND_BptxAND", &trigSingleJet8);
   hltTree->SetBranchAddress("L1_NotMinimumBiasHF2_AND_BptxAND", &notMBTrig);
   
   const int maxJets = 1000;
@@ -34,10 +35,10 @@ void processJets(TString inputDir="HiForestMiniAOD_all.root", TString outputFile
   Float_t jteta[maxJets];
   Float_t jtphi[maxJets];
   
-  caloJetTree->SetBranchAddress("nref", &nref);
-  caloJetTree->SetBranchAddress("jtpt", jtpt);
-  caloJetTree->SetBranchAddress("jteta", jteta);
-  caloJetTree->SetBranchAddress("jtphi", jtphi);
+  jetTree->SetBranchAddress("nref", &nref);
+  jetTree->SetBranchAddress("jtpt", jtpt);
+  jetTree->SetBranchAddress("jteta", jteta);
+  jetTree->SetBranchAddress("jtphi", jtphi);
   
   const int maxTrks= 2000;
    Int_t nTrk;
@@ -92,6 +93,16 @@ void processJets(TString inputDir="HiForestMiniAOD_all.root", TString outputFile
     outTree->Branch("j2phi", &j2phi, "j2phi/F");
     outTree->Branch("j3phi", &j3phi, "j3phi/F");
 
+    TTree *outTrkTree = new TTree("trks", "Filtered track data");
+    int output_nTrk;
+    Float_t output_trkPt[2000];
+    Float_t output_trkEta[2000];
+    Float_t output_trkPhi[2000];
+    outTrkTree->Branch("nTrk", &output_nTrk, "nTrk/I");
+    outTrkTree->Branch("trkPt", output_trkPt, "trkPt[nTrk]/F");
+    outTrkTree->Branch("trkEta", output_trkEta, "trkEta[nTrk]/F");
+    outTrkTree->Branch("trkPhi", output_trkPhi, "trkPhi[nTrk]/F");
+    
     // 🔹 5. Event Loop
     int numEvents = hltTree->GetEntries();
     cout << "total events: " << numEvents << endl;
@@ -101,7 +112,7 @@ void processJets(TString inputDir="HiForestMiniAOD_all.root", TString outputFile
 	cout << "working on " << i << "/"<<numEvents<< "th event..." << endl;
       
       hltTree->GetEntry(i);
-      caloJetTree->GetEntry(i);
+      jetTree->GetEntry(i);
       trackTree->GetEntry(i);
       
       // Reset variables for each event
@@ -114,7 +125,7 @@ void processJets(TString inputDir="HiForestMiniAOD_all.root", TString outputFile
       
       //        if (trigger1 || trigger2) {  // If at least one trigger is fired
       //      cout << "notMBTrig = " << notMBTrig << endl;
-      if (trigger2) {  // If at least one trigger is fired
+      if (trigSingleJet8) {  // If at least one trigger is fired
 	for (int j = 0; j < nref; j++) {
 	  if (jtpt[j] > 1 && fabs(jteta[j]) < 2.4) {  // Apply conditions
 	    selected_jets.push_back(std::make_tuple(jtpt[j], jteta[j], jtphi[j]));
@@ -152,6 +163,7 @@ void processJets(TString inputDir="HiForestMiniAOD_all.root", TString outputFile
 	}
 
 	cout << "nTrk  = " << nTrk << endl;
+	output_nTrk = 0;
 	for (int itrk = 0; itrk < nTrk; itrk ++) {
 	  bool iPurity = highPurity->at(itrk);
 	  float iTrkDz = trkDzFirstVtx->at(itrk);
@@ -170,7 +182,12 @@ void processJets(TString inputDir="HiForestMiniAOD_all.root", TString outputFile
 	    continue;
 	  if ( fabs(iTrkDxy/iTrkDxyErr) > 3.0 ) 
 	    continue;
+
+	  output_trkPt[output_nTrk] = iPt;
+	  output_trkEta[output_nTrk] = iEta;
+	  output_trkPhi[output_nTrk] = iPhi;
 	  
+	  output_nTrk++;
 	  //	  cout << "iTrkDz/iTrkDzErr = " << iTrkDz/iTrkDzErr << endl;
 
 	  
@@ -180,13 +197,15 @@ void processJets(TString inputDir="HiForestMiniAOD_all.root", TString outputFile
       }
       // Save the event in the output tree
       outTree->Fill();
+      outTrkTree->Fill();
     }
     
     // 🔹 6. Write and Close Output File
     outFile->cd();
     outTree->Write();
+    outTrkTree->Write();
     outFile->Close();
     
-    std::cout << "Output saved to output_tree.root" << std::endl;
+    std::cout << "Output saved to output_tree_L1SignleJet8trig.root" << std::endl;
     
 }
