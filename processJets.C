@@ -117,8 +117,10 @@ void processJets(TString inputDir="/eos/cms/store/group/phys_heavyions/hbossi/UP
     cout << "total events: " << numEvents << endl;
     //    for (int i = 0; i < 10000; i++) {
     for (int i = 0; i < numEvents; i++) {
-      //  if ( i%10000 == 0 )
-      cout << "working on " << i << "/"<<numEvents<< "th event..." << endl;
+      if ( i%10000 == 0 )
+	cout << "working on " << i << "/"<<numEvents<< "th event..." << endl;
+
+
       hltTree->GetEntry(i);
       jetTree->GetEntry(i);
       trackTree->GetEntry(i);
