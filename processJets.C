@@ -7,9 +7,11 @@
 #include <vector>
 #include <algorithm>
 #include <TChain.h>
+#include "JEC/JetUncertainty.h"
+#include "JEC/JetCorrector.h"
 
 //void processJets(TString inputDir="/eos/cms/store/group/phys_heavyions/jdlang/run3_2023Data_Jan2024ReReco/Run3_2023UPC_375697/HIForward13/*/*/*/*.root", TString outputFile="output375697_HiForward13.root") {
-void processJets(TString inputDir="forest_000.root", TString outputFile="output_tree_L1SignleJet8trig.root") {
+void processJets(TString inputDir="/eos/cms/store/group/phys_heavyions/hbossi/UPCInvestigations/*.root", TString outputFile="output_tree_L1SignleJet8trig.root") {
   // USE TChain!! 
   TChain *hltTree = new TChain("hltanalysis/HltTree");
   TChain *jetTree = new TChain("ak4PFJetAnalyzer/t");
@@ -29,7 +31,7 @@ void processJets(TString inputDir="forest_000.root", TString outputFile="output_
   hltTree->SetBranchAddress("L1_SingleJet8_NotMinimumBiasHF2_AND_BptxAND", &trigSingleJet8);
   hltTree->SetBranchAddress("L1_NotMinimumBiasHF2_AND_BptxAND", &notMBTrig);
   
-  const int maxJets = 1000;
+  const int maxJets = 200;
   int nref;
   Float_t jtpt[maxJets];
   Float_t jteta[maxJets];
@@ -108,7 +110,7 @@ void processJets(TString inputDir="forest_000.root", TString outputFile="output_
     cout << "total events: " << numEvents << endl;
     //    for (int i = 0; i < 10000; i++) {
     for (int i = 0; i < numEvents; i++) {
-      if ( i%100000 == 0 )
+      if ( i%10000 == 0 )
 	cout << "working on " << i << "/"<<numEvents<< "th event..." << endl;
       
       hltTree->GetEntry(i);
@@ -162,7 +164,7 @@ void processJets(TString inputDir="forest_000.root", TString outputFile="output_
 	  
 	}
 
-	cout << "nTrk  = " << nTrk << endl;
+	//	cout << "nTrk  = " << nTrk << endl;
 	output_nTrk = 0;
 	for (int itrk = 0; itrk < nTrk; itrk ++) {
 	  bool iPurity = highPurity->at(itrk);
