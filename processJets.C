@@ -11,8 +11,9 @@
 #include "JEC/JetCorrector.h"
 
 //void processJets(TString inputDir="/eos/cms/store/group/phys_heavyions/jdlang/run3_2023Data_Jan2024ReReco/Run3_2023UPC_375697/HIForward13/*/*/*/*.root", TString outputFile="output375697_HiForward13.root") {
-void processJets(TString inputDir="/eos/cms/store/group/phys_heavyions/hbossi/UPCInvestigations/*.root", TString outputFile="output_tree_L1SignleJet8trig.root") {
+void processJets(TString inputDir="/eos/cms/store/group/phys_heavyions/hbossi/UPCInvestigations/*.root", TString outputFile="output_tree_L1SignleJet8trig_jetEnergyCorrected.root") {
   // USE TChain!! 
+  
   TChain *hltTree = new TChain("hltanalysis/HltTree");
   TChain *jetTree = new TChain("ak4PFJetAnalyzer/t");
   TChain *trackTree = new TChain("ppTracks/trackTree");
@@ -31,14 +32,16 @@ void processJets(TString inputDir="/eos/cms/store/group/phys_heavyions/hbossi/UP
   hltTree->SetBranchAddress("L1_SingleJet8_NotMinimumBiasHF2_AND_BptxAND", &trigSingleJet8);
   hltTree->SetBranchAddress("L1_NotMinimumBiasHF2_AND_BptxAND", &notMBTrig);
   
-  const int maxJets = 200;
+  const int maxJets = 2000;
   int nref;
   Float_t jtpt[maxJets];
+  Float_t rawpt[maxJets];
   Float_t jteta[maxJets];
   Float_t jtphi[maxJets];
   
   jetTree->SetBranchAddress("nref", &nref);
   jetTree->SetBranchAddress("jtpt", jtpt);
+  jetTree->SetBranchAddress("rawpt", rawpt);
   jetTree->SetBranchAddress("jteta", jteta);
   jetTree->SetBranchAddress("jtphi", jtphi);
   
@@ -104,15 +107,18 @@ void processJets(TString inputDir="/eos/cms/store/group/phys_heavyions/hbossi/UP
     outTrkTree->Branch("trkPt", output_trkPt, "trkPt[nTrk]/F");
     outTrkTree->Branch("trkEta", output_trkEta, "trkEta[nTrk]/F");
     outTrkTree->Branch("trkPhi", output_trkPhi, "trkPhi[nTrk]/F");
+
+    vector<string> Files;
+    Files.push_back("JEC/ParallelMC_L2Relative_AK4PF_pp_Reco_v0_12-21-2023.txt");
+    JetCorrector JEC(Files);
     
     // 🔹 5. Event Loop
     int numEvents = hltTree->GetEntries();
     cout << "total events: " << numEvents << endl;
     //    for (int i = 0; i < 10000; i++) {
     for (int i = 0; i < numEvents; i++) {
-      if ( i%10000 == 0 )
-	cout << "working on " << i << "/"<<numEvents<< "th event..." << endl;
-      
+      //  if ( i%10000 == 0 )
+      cout << "working on " << i << "/"<<numEvents<< "th event..." << endl;
       hltTree->GetEntry(i);
       jetTree->GetEntry(i);
       trackTree->GetEntry(i);
@@ -128,6 +134,18 @@ void processJets(TString inputDir="/eos/cms/store/group/phys_heavyions/hbossi/UP
       //        if (trigger1 || trigger2) {  // If at least one trigger is fired
       //      cout << "notMBTrig = " << notMBTrig << endl;
       if (trigSingleJet8) {  // If at least one trigger is fired
+	//      if (notMBTrig) {  // If at least one trigger is fired
+
+	// Jet energy correction
+	for (int j = 0; j < nref; j++) {
+	  //	  cout << "before: " << jtpt[j] << endl;
+	  JEC.SetJetPT( jtpt[j]);
+	  JEC.SetJetEta( jteta[j]);
+	  JEC.SetJetPhi( jtphi[j]);
+	  jtpt[j] = JEC.GetCorrectedPT();
+	  //	  cout << "after: " << jtpt[j] << endl;
+	}
+	
 	for (int j = 0; j < nref; j++) {
 	  if (jtpt[j] > 1 && fabs(jteta[j]) < 2.4) {  // Apply conditions
 	    selected_jets.push_back(std::make_tuple(jtpt[j], jteta[j], jtphi[j]));
@@ -195,11 +213,12 @@ void processJets(TString inputDir="/eos/cms/store/group/phys_heavyions/hbossi/UP
 	  
 	  //	  std::cout << "Entry " << i << ", Track " << j << ": trkPt * trkEta = " << trkPtEta << std::endl;
 	}
-	 
+
+	outTree->Fill();
+	outTrkTree->Fill();
       }
       // Save the event in the output tree
-      outTree->Fill();
-      outTrkTree->Fill();
+      
     }
     
     // 🔹 6. Write and Close Output File
